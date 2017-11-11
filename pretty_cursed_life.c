@@ -22,8 +22,23 @@ void draw(int x, int y, char dc) {
   delch();  insch(dc);
 }
 
+// ================
+// CONSTANTS
+
+// How much larger the world is compared to the screen size
+const int SIZE = 3;
+
+
+// ================
 // DATA DEFINITIONS
 std::vector<bool> field;
+int width = 0;
+int height = 0;
+
+// Origin
+int x0 = 0;
+int y0 = 0;
+
 bool running = true;
 int generation = 0;
 
@@ -62,10 +77,25 @@ void renderGeneration() {
 
 void initCurses() {
   wnd = initscr();  // curses call to initialize window
+  if(has_colors() == false) {
+    endwin();
+    printf("Your terminal does not support color\n");
+    exit(1);
+  }
+  start_color();
+  init_pair(1, COLOR_RED, COLOR_YELLOW);
+  attron(COLOR_PAIR(1));
+
   cbreak();  // curses call to set no waiting for Enter key
+  nodelay(wnd, true);
+  //timeout(1); // keyboard support
   noecho();  // curses call to set no echoing
   getmaxyx(wnd,nrows,ncols);  // curses call to find size of window
-  field.resize(nrows * ncols);
+
+  width = ncols * SIZE;
+  height = nrows * SIZE;
+  
+  field.resize(width * height);
 }
 
 
@@ -74,7 +104,7 @@ void renderField() {
 
   for (int x = 0; x < ncols; x++) {
     for (int y = 0; y < nrows; y++) {
-      int i = y * ncols + x;
+      int i = ((y + y0) * width + (x + x0)) % field.size();
       if (field.at(i)) {
         draw(x, y, '#');
       }
@@ -100,12 +130,12 @@ int neighboursSum(int i) {
 
   if (field[(i + 1) % field.size()]) sum++;
   if (field[(i - 1 + field.size()) % field.size()]) sum++;
-  if (field[(i + ncols) % field.size()]) sum++;  
-  if (field[(i + ncols + 1) % field.size()]) sum++;
-  if (field[(i + ncols - 1) % field.size()]) sum++;
-  if (field[(i - ncols +  field.size()) % field.size()]) sum++;  
-  if (field[(i - ncols + 1 + field.size()) % field.size()]) sum++;
-  if (field[(i - ncols - 1 + field.size()) % field.size()]) sum++;
+  if (field[(i + width) % field.size()]) sum++;  
+  if (field[(i + width + 1) % field.size()]) sum++;
+  if (field[(i + width - 1) % field.size()]) sum++;
+  if (field[(i - width +  field.size()) % field.size()]) sum++;  
+  if (field[(i - width + 1 + field.size()) % field.size()]) sum++;
+  if (field[(i - width - 1 + field.size()) % field.size()]) sum++;
 
   return sum;
 }
@@ -128,6 +158,19 @@ void updateField() {
   }  
 }
 
+void handleInput() {
+  char d = getch();
+
+  if (d == 'w') {
+    y0--;
+  } else if (d == 's') {
+    y0++;
+  } else if (d == 'd') {
+    x0++;
+  } else if (d == 'a') {
+    x0--;
+  }
+}
 
 int main() {
   // Stop on SIGINT
@@ -139,6 +182,7 @@ int main() {
   while (running) {
     renderField();
     updateField();
+    handleInput();
   }
 
   killCurses();
