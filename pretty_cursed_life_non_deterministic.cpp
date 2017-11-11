@@ -83,7 +83,7 @@ void initCurses() {
     exit(1);
   }
   start_color();
-  init_pair(1, COLOR_RED, COLOR_YELLOW);
+  init_pair(1, COLOR_RED, COLOR_GREEN);
   attron(COLOR_PAIR(1));
 
   cbreak();  // curses call to set no waiting for Enter key
@@ -136,6 +136,10 @@ int neighboursSum(int i) {
   if (field[(i - width +  field.size()) % field.size()]) sum++;  
   if (field[(i - width + 1 + field.size()) % field.size()]) sum++;
   if (field[(i - width - 1 + field.size()) % field.size()]) sum++;
+
+  if (std::rand() % 997 == 0) {
+    sum = sum + 1;
+  }
 
   return sum;
 }
