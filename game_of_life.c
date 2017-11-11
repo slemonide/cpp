@@ -8,7 +8,7 @@
 
 
 // CONSTANTS
-const int size = 1000;
+const int size = 40;
 
 // DATA DEFINITIONS
 bool field [size * size];
@@ -119,7 +119,7 @@ int main() {
   while (running) {
     renderField();
     updateField();
-    usleep(500000);
+    usleep(50000);
   }
 }
 
